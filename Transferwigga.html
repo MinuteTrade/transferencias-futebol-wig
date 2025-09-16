@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transferências de Futebol - Compartilhado</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #0c5c9c 0%, #2b8cce 100%);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-weight: normal;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .form-section, .transfers-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #0c5c9c;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #0c5c9c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background-color: #084272;
+        }
+        
+        button.secondary {
+            background-color: #6c757d;
+        }
+        
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .transfer-card {
+            background-color: #f9f9f9;
+            border-left: 5px solid #0c5c9c;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            transition: transform 0.2s;
+        }
+        
+        .transfer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .transfer-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .transfer-values {
+            flex: 1;
+            min-width: 200px;
+            text-align: right;
+        }
+        
+        .player-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0c5c9c;
+        }
+        
+        .clubs {
+            font-style: italic;
+            margin: 10px 0;
+        }
+        
+        .value {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #2e8540;
+        }
+        
+        .percentage {
+            color: #666;
+        }
+        
+        .bonus {
+            color: #d47500;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background-color: #2e8540;
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background-color: #d47500;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .transfer-card {
+                flex-direction: column;
+            }
+            
+            .transfer-values {
+                text-align: left;
+                margin-top: 15px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Transferências de Futebol</h1>
+            <p class="subtitle">Dados compartilhados globalmente</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section class="form-section">
+            <h2>Nova Transferência</h2>
+            <form id="transferForm">
+                <div class="form-group">
+                    <label for="playerName">Nome do Jogador</label>
+                    <input type="text" id="playerName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fromClub">Clube de Origem</label>
+                    <input type="text" id="fromClub" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="toClub">Clube de Destino</label>
+                    <input type="text" id="toClub" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fixedValue">Valor Fixo (€)</label>
+                    <input type="number" id="fixedValue" min="0" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contractPercentage">Porcentagem do Contrato (%)</label>
+                    <input type="number" id="contractPercentage" min="0" max="100" step="0.1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="bonus">Bônus (€)</label>
+                    <input type="number" id="bonus" min="0" step="0.01">
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit">Adicionar Transferência</button>
+                    <button type="button" id="clearLocal" class="secondary">Limpar Dados Locais</button>
+                </div>
+            </form>
+        </section>
+        
+        <section class="transfers-section">
+            <h2>Transferências Registradas</h2>
+            <div id="loading" class="loading">Carregando transferências...</div>
+            <div id="transfersList"></div>
+            <div class="button-group">
+                <button type="button" id="refreshData">Atualizar Dados</button>
+                <button type="button" id="loadExample" class="secondary">Carregar Exemplos</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const transferForm = document.getElementById('transferForm');
+            const transfersList = document.getElementById('transfersList');
+            const loadingElement = document.getElementById('loading');
+            const refreshButton = document.getElementById('refreshData');
+            const clearLocalButton = document.getElementById('clearLocal');
+            const loadExampleButton = document.getElementById('loadExample');
+            const notification = document.getElementById('notification');
+            
+            // URL para a API - substituída pela sua chave
+            const API_URL = 'https://api.jsonbin.io/v3/b/66b3bf65ad19ca34f85c2d6c';
+            const API_KEY = '$2a$10$3Oo4pSxWWu22qdIv9jwddukR/VvK6vsBJjXifcdfTn2TpOjG98Jti';
+            
+            // Carregar transferências
+            loadTransfers();
+            
+            // Adicionar nova transferência
+            transferForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const playerName = document.getElementById('playerName').value;
+                const fromClub = document.getElementById('fromClub').value;
+                const toClub = document.getElementById('toClub').value;
+                const fixedValue = parseFloat(document.getElementById('fixedValue').value);
+                const contractPercentage = document.getElementById('contractPercentage').value ? 
+                    parseFloat(document.getElementById('contractPercentage').value) : 0;
+                const bonus = document.getElementById('bonus').value ? 
+                    parseFloat(document.getElementById('bonus').value) : 0;
+                
+                const newTransfer = {
+                    playerName,
+                    fromClub,
+                    toClub,
+                    fixedValue,
+                    contractPercentage,
+                    bonus,
+                    totalValue: fixedValue + bonus,
+                    id: Date.now()
+                };
+                
+                // Adicionar à lista local primeiro para feedback imediato
+                addTransferToUI(newTransfer);
+                
+                // Salvar no JSONBin
+                await saveTransferToAPI(newTransfer);
+                
+                // Limpar formulário
+                transferForm.reset();
+            });
+            
+            // Botão para atualizar dados
+            refreshButton.addEventListener('click', function() {
+                loadTransfers();
+            });
+            
+            // Botão para limpar dados locais
+            clearLocalButton.addEventListener('click', function() {
+                if (confirm('Tem certeza que deseja limpar todos os dados locais?')) {
+                    localStorage.removeItem('footballTransfers');
+                    transfersList.innerHTML = '';
+                    showNotification('Dados locais limpos com sucesso!');
+                }
+            });
+            
+            // Botão para carregar exemplos
+            loadExampleButton.addEventListener('click', function() {
+                const exampleTransfers = [
+                    {
+                        playerName: "Kylian Mbappé",
+                        fromClub: "Paris Saint-Germain",
+                        toClub: "Real Madrid",
+                        fixedValue: 65000000,
+                        contractPercentage: 100,
+                        bonus: 15000000,
+                        totalValue: 80000000,
+                        id: 1
+                    },
+                    {
+                        playerName: "Jude Bellingham",
+                        fromClub: "Borussia Dortmund",
+                        toClub: "Real Madrid",
+                        fixedValue: 103000000,
+                        contractPercentage: 100,
+                        bonus: 0,
+                        totalValue: 103000000,
+                        id: 2
+                    },
+                    {
+                        playerName: "Victor Osimhen",
+                        fromClub: "Lille",
+                        toClub: "Napoli",
+                        fixedValue: 45000000,
+                        contractPercentage: 80,
+                        bonus: 10000000,
+                        totalValue: 55000000,
+                        id: 3
+                    }
+                ];
+                
+                // Limpar lista atual
+                transfersList.innerHTML = '';
+                
+                // Adicionar exemplos
+                exampleTransfers.forEach(transfer => {
+                    addTransferToUI(transfer);
+                });
+                
+                showNotification('Exemplos carregados com sucesso!');
+            });
+            
+            // Função para carregar transferências da API
+            async function loadTransfers() {
+                loadingElement.style.display = 'block';
+                transfersList.innerHTML = '';
+                
+                try {
+                    const response = await fetch(API_URL, {
+                        headers: {
+                            'X-Access-Key': API_KEY
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar dados da API');
+                    }
+                    
+                    const data = await response.json();
+                    const transfers = data.record || [];
+                    
+                    if (transfers.length === 0) {
+                        transfersList.innerHTML = '<div class="empty-message">Nenhuma transferência encontrada. Adicione uma nova ou carregue os exemplos.</div>';
+                    } else {
+                        transfers.forEach(transfer => {
+                            addTransferToUI(transfer);
+                        });
+                    }
+                    
+                    showNotification('Dados carregados com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao carregar transferências:', error);
+                    showNotification('Erro ao carregar transferências. Verifique sua conexão.', true);
+                    
+                    // Fallback para dados locais
+                    const localTransfers = JSON.parse(localStorage.getItem('footballTransfers')) || [];
+                    
+                    if (localTransfers.length === 0) {
+                        transfersList.innerHTML = '<div class="empty-message">Nenhuma transferência encontrada.</div>';
+                    } else {
+                        localTransfers.forEach(transfer => {
+                            addTransferToUI(transfer);
+                        });
+                    }
+                } finally {
+                    loadingElement.style.display = 'none';
+                }
+            }
+            
+            // Função para salvar transferência na API
+            async function saveTransferToAPI(transfer) {
+                try {
+                    // Primeiro, obtemos as transferências existentes
+                    const response = await fetch(API_URL, {
+                        headers: {
+                            'X-Access-Key': API_KEY
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar dados existentes');
+                    }
+                    
+                    const data = await response.json();
+                    const existingTransfers = data.record || [];
+                    
+                    // Adicionamos a nova transferência
+                    existingTransfers.push(transfer);
+                    
+                    // Atualizamos a API com a nova lista
+                    const updateResponse = await fetch(API_URL, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Access-Key': API_KEY
+                        },
+                        body: JSON.stringify(existingTransfers)
+                    });
+                    
+                    if (!updateResponse.ok) {
+                        throw new Error('Erro ao salvar dados na API');
+                    }
+                    
+                    showNotification('Transferência salva com sucesso na nuvem!');
+                    
+                } catch (error) {
+                    console.error('Erro ao salvar na API:', error);
+                    showNotification('Erro ao conectar com a nuvem. Salvando localmente.', true);
+                    
+                    // Fallback para localStorage
+                    const localTransfers = JSON.parse(localStorage.getItem('footballTransfers')) || [];
+                    localTransfers.push(transfer);
+                    localStorage.setItem('footballTransfers', JSON.stringify(localTransfers));
+                }
+            }
+            
+            // Função para adicionar transferência à UI
+            function addTransferToUI(transfer) {
+                const transferCard = document.createElement('div');
+                transferCard.className = 'transfer-card';
+                
+                transferCard.innerHTML = `
+                    <div class="transfer-info">
+                        <div class="player-name">${transfer.playerName}</div>
+                        <div class="clubs">De: ${transfer.fromClub} → Para: ${transfer.toClub}</div>
+                    </div>
+                    <div class="transfer-values">
+                        <div class="value">Valor total: €${formatCurrency(transfer.totalValue)}</div>
+                        <div class="fixed-value">Valor fixo: €${formatCurrency(transfer.fixedValue)}</div>
+                        ${transfer.contractPercentage > 0 ? 
+                            `<div class="percentage">Porcentagem: ${transfer.contractPercentage}%</div>` : ''}
+                        ${transfer.bonus > 0 ? 
+                            `<div class="bonus">Bônus: €${formatCurrency(transfer.bonus)}</div>` : ''}
+                    </div>
+                `;
+                
+                transfersList.appendChild(transferCard);
+            }
+            
+            // Função para mostrar notificação
+            function showNotification(message, isError = false) {
+                notification.textContent = message;
+                notification.classList.add('show');
+                if (isError) {
+                    notification.classList.add('error');
+                } else {
+                    notification.classList.remove('error');
+                }
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Função para formatar valores em moeda
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                }).format(value);
+            }
+        });
+    </script>
+</body>
+</html>
